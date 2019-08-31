@@ -1,4 +1,6 @@
 const express = require('express');
+var createError = require('http-errors');
+
 // Import Controllers
 const controllers = require('./controller/controllers')
 // Import Middlewares
@@ -17,8 +19,6 @@ mainRouter.use(middlewares.corsMiddleware);
 // Admin routers
 mainRouter.use('/api', apiRouter);
 
-
-
 apiRouter.route('/grade_level')
    .get(controllers.gradeLevelController.index)
    .post(controllers.gradeLevelController.create);
@@ -26,5 +26,8 @@ apiRouter.route('/grade_level/:id')
    .get(controllers.gradeLevelController.get)
    .put(controllers.gradeLevelController.update)
    .delete(controllers.gradeLevelController.delete);
+
+mainRouter.use((req, res, next) => next(createError(404)));
+mainRouter.use(middlewares.errorHandler);
 
 module.exports = mainRouter;

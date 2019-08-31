@@ -1,44 +1,64 @@
-const db = require('../db/knex');
-const GradeLevelModel = require('../models/gradeLevelModel');
+const knex = require('../db/knex');
+const gradeLevelModel = require('../models/gradeLevelModel')
 
 module.exports = {
 
    index: async function (req, res, next) {
       let gradeLevels = [];
+
       try {
-         gradeLevels = await db.from('grade_level').orderBy("name", "ASC");
+         gradeLevels = await knex.from('grade_level');
       } catch (e) {
-         // return next(e);
-         // console.log(e);
-         return next({error: e.toString()});
+         return next(e);
       }
-      if (gradeLevels.length == 0)
-         return next();
 
       res.json(gradeLevels);
    },
 
    get: async function (req, res, next) {
-      let gradeLevel = await GradeLevelModel.get(req.params.id);
+      let gradeLevel = await knex('grade_level')
+         .where({id: req.params.id})
+         .first();
+
+      // If nothing is retrieved, return 404 response
       if (gradeLevel === 'undefined')
          return next();
-      console.log(gradeLevel.getId());
+         
       res.json(gradeLevel);
    },
 
    create: async function (req, res, next) {
-      
+      gradeLevelModel.create(req.body)
+         .then(async (ids) => {
+            let gradeLevel = await gradeLevelModel.get(ids[0]);
+            res.json(gradeLevel);
+         })
+         .catch(e => next(e));
    },
 
    update: async function (req, res, next) {
-      let result = await db.from('grade_level').where({id: req.params.id});
+      // Do database update
+      let ids = await gradeLevelModel.update(req.params.id, req.body);
 
-      if (result.length == 0)
-         return next();
+      // Check if query returned an array
+      if (!Array.isArray(ids))
+         next();
 
-      let gradeLevel = result[0];
+      // Check if array is empty
+      if (ids.length == 0)
+         next()
 
-      console.log(gradeLevel);
+      // Retrieve updated record
+      let gradeLevel = await knex
+         .from('grade_level')
+         .where({id: req.params.id})
+         .first();
+
+      // Check if record exists
+      if (typeof gradeLevel === 'undefined')
+         next()
+
+      // Return the updated record
       res.json(gradeLevel);
    },
 

@@ -1,3 +1,6 @@
+/httprequests
 /node_modules
 db.js
-.vscode
+db.sqlite
+.*
+!.gitignore
