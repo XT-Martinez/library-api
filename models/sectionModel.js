@@ -1,18 +1,17 @@
 const knex = require('../db/knex');
 const joi = require('joi');
 
-class GradeLevelModel {
+class SectionModel {
 
    static async get(id) {
-      return await knex('grade_level').where({id: id}).first();
+      return await knex('section').where({id: id}).first();
    }
 
    static async create(data) {
       try {         
-         return knex("grade_level").returning("id").insert({
+         return knex("section").returning("id").insert({
             name: data.name,
-            department_id: data.department_id,
-            sy_id: data.sy_id
+            grade_level_id: data.grade_level_id,
          });
       }
       catch(e) {
@@ -22,15 +21,14 @@ class GradeLevelModel {
 
    static async update(id, data) {
       try {
-         data = await GradeLevelModel.validate(data);
+         data = await SectionModel.validate(data);
          
-         return knex("grade_level")
+         return knex("section")
             .where({id: id})
             .returning("id")
             .update({
                name: data.name,
-               department_id: data.department_id,
-               sy_id: data.sy_id
+               grade_level_id: data.grade_level_id
             });
       }
       catch(e) {
@@ -41,13 +39,16 @@ class GradeLevelModel {
    static async validate(data) {
       const schema = joi.object().keys({
          name				: joi.string().label("Name").min(3).max(30).required(),
-         department_id	: joi.number().label("Department").required(),
-         sy_id          : joi.number().label("School Year").required()
+         grade_level_id	: joi.number().label("Grade Level").required()
 		});
 		
 		return schema.validate(data, {abortEarly: false});
    }
 
+   static delete(id) {
+      return knex("section").where({id: id}).del();
+   }
+
 }
 
-module.exports = GradeLevelModel;
+module.exports = SectionModel;

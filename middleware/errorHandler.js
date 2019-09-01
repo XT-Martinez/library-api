@@ -2,10 +2,14 @@ module.exports = (err, req, res, next) => {
 
    // Handle validation errors
    if ("name" in err && err.name === 'ValidationError') {
+      console.log(err);
       let messages = [];
 
       err.details.forEach(v => {
-         messages.push(v.message + '.');
+         messages.push({
+            msg: v.message + '.',
+            path: v.path
+         });
       });
 
       res.status(422).json({ValidationMessages: messages});         

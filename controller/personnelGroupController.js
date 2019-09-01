@@ -1,50 +1,52 @@
 const knex = require('../db/knex');
-const gradeLevelModel = require('../models/gradeLevelModel')
+const personnelGroupModel = require('../models/personnelGroupModel');
 
 module.exports = {
 
    index: async function (req, res, next) {
-      let gradeLevels = [];
+      let personnelGroups = [];
 
       try {
-         gradeLevels = await knex.from('grade_level');
+         personnelGroups = await knex.from('personnel_group');
       } catch (e) {
          return next(e);
       }
 
-      res.json(gradeLevels);
+      res.json(personnelGroups);
    },
 
    get: async function (req, res, next) {
-      let gradeLevel = await knex('grade_level')
+      let personnelGroup = await knex('personnel_group')
          .where({id: req.params.id})
          .first();
 
+      console.log(personnelGroup);
+
       // If nothing is retrieved, return 404 response
-      if (typeof gradeLevel === 'undefined')
+      if (typeof personnelGroup === 'undefined')
          return next();
          
-      res.json(gradeLevel);
+      res.json(personnelGroup);
    },
 
    create: async function (req, res, next) {
       // Validate request body
-      gradeLevelModel.validate(req.body)
-      // Insert new grade level in the database
-      .then(data => { return gradeLevelModel.create(data); })
+      personnelGroupModel.validate(req.body)
+      // Insert new personnelGroup in the database
+      .then(data => { return personnelGroupModel.create(data); })
       // Retrieve the latest created record
-      .then(ids => { return gradeLevelModel.get(ids[0]); })
+      .then(ids => { return personnelGroupModel.get(ids[0]); })
       // Return the created record as a response
-      .then(gradeLevel => res.json(gradeLevel))
+      .then(personnelGroup => res.json(personnelGroup))
       // Throw error to the error handler
       .catch(e => next(e));
    },
 
    update: async function (req, res, next) {
       // Validate request body
-      gradeLevelModel.validate(req.body)
+      personnelGroupModel.validate(req.body)
       // Update record in the database
-      .then(data => {return gradeLevelModel.update(req.params.id, data)})
+      .then(data => {return personnelGroupModel.update(req.params.id, data)})
       // Do database update
       .then(ids => {
          // Check if query returned an array
@@ -57,23 +59,24 @@ module.exports = {
 
          // Retrieve updated record
         return knex
-            .from('grade_level')
+            .from('personnel_group')
             .where({id: req.params.id})
             .first();
       })
-      .then(gradeLevel => {
+      .then(personnelGroup => {
          // Check if record exists
-         if (typeof gradeLevel === 'undefined')
+         if (typeof personnelGroup === 'undefined')
             next();
 
           // Return the updated record
-         res.json(gradeLevel);
+         res.json(personnelGroup);
       })
       .catch(e => next(e));
    },
 
-   delete: async function (req, res, next) {
-
-   }
+   // delete: async function (req, res, next) {
+   //    await personnelGroupModel.delete(req.params.id);
+   //    res.json({"message": `personnelGroup id ${req.params.id} deleted`});
+   // }
 
 };

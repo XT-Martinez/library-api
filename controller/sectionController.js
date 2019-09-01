@@ -1,50 +1,50 @@
 const knex = require('../db/knex');
-const gradeLevelModel = require('../models/gradeLevelModel')
+const sectionModel = require('../models/sectionModel')
 
 module.exports = {
 
    index: async function (req, res, next) {
-      let gradeLevels = [];
+      let sections = [];
 
       try {
-         gradeLevels = await knex.from('grade_level');
+         sections = await knex.from('section');
       } catch (e) {
          return next(e);
       }
 
-      res.json(gradeLevels);
+      res.json(sections);
    },
 
    get: async function (req, res, next) {
-      let gradeLevel = await knex('grade_level')
+      let section = await knex('section')
          .where({id: req.params.id})
          .first();
 
       // If nothing is retrieved, return 404 response
-      if (typeof gradeLevel === 'undefined')
+      if (typeof section === 'undefined')
          return next();
          
-      res.json(gradeLevel);
+      res.json(section);
    },
 
    create: async function (req, res, next) {
       // Validate request body
-      gradeLevelModel.validate(req.body)
-      // Insert new grade level in the database
-      .then(data => { return gradeLevelModel.create(data); })
+      sectionModel.validate(req.body)
+      // Insert new section in the database
+      .then(data => { return sectionModel.create(data); })
       // Retrieve the latest created record
-      .then(ids => { return gradeLevelModel.get(ids[0]); })
+      .then(ids => { return sectionModel.get(ids[0]); })
       // Return the created record as a response
-      .then(gradeLevel => res.json(gradeLevel))
+      .then(section => res.json(section))
       // Throw error to the error handler
       .catch(e => next(e));
    },
 
    update: async function (req, res, next) {
       // Validate request body
-      gradeLevelModel.validate(req.body)
+      sectionModel.validate(req.body)
       // Update record in the database
-      .then(data => {return gradeLevelModel.update(req.params.id, data)})
+      .then(data => {return sectionModel.update(req.params.id, data)})
       // Do database update
       .then(ids => {
          // Check if query returned an array
@@ -57,23 +57,24 @@ module.exports = {
 
          // Retrieve updated record
         return knex
-            .from('grade_level')
+            .from('section')
             .where({id: req.params.id})
             .first();
       })
-      .then(gradeLevel => {
+      .then(section => {
          // Check if record exists
-         if (typeof gradeLevel === 'undefined')
+         if (typeof section === 'undefined')
             next();
 
           // Return the updated record
-         res.json(gradeLevel);
+         res.json(section);
       })
       .catch(e => next(e));
    },
 
    delete: async function (req, res, next) {
-
+      await sectionModel.delete(req.params.id);
+      res.json({"message": `Section id ${req.params.id} deleted`});
    }
 
 };
