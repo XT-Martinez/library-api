@@ -1,5 +1,5 @@
 const express = require('express');
-var createError = require('http-errors');
+const createError = require('http-errors');
 
 // Import Controllers
 const controllers = require('./controller/controllers')
@@ -66,12 +66,16 @@ apiRouter.route('/personnel_group/:id')
 
 // Borrowing Document Routes
 apiRouter.route('/borrowing_doc')
-   .get(controllers.borrowingDocumentController.index)
+   // .get(controllers.borrowingDocumentController.index)
    .post(controllers.borrowingDocumentController.create);
 apiRouter.route('/borrowing_doc/:id')
    .get(controllers.borrowingDocumentController.get)
    // .put(controllers.borrowingDocumentController.update)
    // .delete(controllers.borrowingDocumentController.delete);
+
+// Report Routes
+apiRouter.get('/reports/summary_report_personnel',
+   controllers.borrowingDocumentController.getSummaryReportPersonnel);
 
 mainRouter.use((req, res, next) => next(createError(404)));
 mainRouter.use(middlewares.errorHandler);

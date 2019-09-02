@@ -1,6 +1,6 @@
 module.exports = (err, req, res, next) => {
 
-   // Handle validation errors
+   // Handle Joi Validation Error Messages
    if ("name" in err && err.name === 'ValidationError') {
       console.log(err);
       let messages = [];
@@ -16,6 +16,7 @@ module.exports = (err, req, res, next) => {
    }
    // Handle TypeError
    else if (err instanceof TypeError) {
+      console.error(err);
       res.status(500).json({
          message: err.message,
          stack: err.stack

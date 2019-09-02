@@ -2,7 +2,7 @@ var express = require('express');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-let router = require('./routes');
+let routes = require('./routes');
 
 var app = express();
 
@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use(router);
+app.use(routes);
 
 // // catch 404 and forward to error handler
 // app.use(function(req, res, next) {
