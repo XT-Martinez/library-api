@@ -1,6 +1,4 @@
 SELECT
-	d.name AS department_name,
-	pg.name AS personnel_group_name,
 	d.id AS department_id,
 	pg.id AS personnel_group_id,
 	SUM(CASE c.prefix WHEN 'S' THEN bdi.qty ELSE 0 END) AS COL_S,
@@ -20,4 +18,4 @@ INNER JOIN personnel_group AS pg ON pg.id = bd.personnel_group_id
 INNER JOIN department AS d ON d.id = pg.department_id
 WHERE EXTRACT(YEAR FROM bd.created_at) = 2019
 AND EXTRACT(MONTH FROM bd.created_at) = 8
-GROUP BY d.name, pg.name;
+GROUP BY d.id, pg.id;

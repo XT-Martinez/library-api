@@ -56,7 +56,9 @@ exports.up = function (knex, Promise) {
 		table.integer("department_id").references('id').inTable('department').notNullable();
 		table.integer("section_id").references('id').inTable('section');
 		table.integer("personnel_group_id").references('id').inTable('personnel_group');
-		table.integer("sy_id").references('id').inTable('school_year').notNullable();
+		// table.integer("sy_id").references('id').inTable('school_year').notNullable();
+		table.integer("borrower_count").notNullable();
+		table.boolean("is_bulk").notNullable();
 		table.timestamp("created_at").defaultTo(knex.fn.now());
 	})
 	
@@ -64,7 +66,7 @@ exports.up = function (knex, Promise) {
 		table.increments("id");
 		table.integer("borrow_doc_id").references('id').inTable('borrow_doc').notNullable();
 		table.integer("collection_id").references('id').inTable('collection').notNullable();
-		table.integer("qty");
+		table.integer("qty").notNullable();
 	})
 	
 	;

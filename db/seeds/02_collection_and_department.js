@@ -33,5 +33,16 @@ exports.seed = async function(knex, Promise) {
 		// {name: "General Services", is_faculty: false, is_student: false}
 		{name: "Admin / Personnel", is_personnel: true },
 	]);
+
+	await knex('personnel_group').insert([
+		// Academe Department
+		{name: "Elementary Faculty", is_faculty: true, department_id: 4 },
+		{name: "Highschool Faculty", is_faculty: true, department_id: 4 },
+		{name: "Elementary Chinese", is_faculty: true, department_id: 4 },
+		{name: "Highschool Chinese", is_faculty: true, department_id: 4 },
+		{name: "Non-Teaching", is_faculty: false, department_id: 4 },
+		{name: "Admin", is_faculty: false, department_id: 4 },
+		{name: "Gen. Services", is_faculty: false, department_id: 4 }
+	]);
 	
 };

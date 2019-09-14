@@ -77,6 +77,12 @@ apiRouter.route('/borrowing_doc/:id')
 apiRouter.get('/reports/summary_report_personnel',
    controllers.borrowingDocumentController.getSummaryReportPersonnel);
 
+apiRouter.get('/reports/summary_report_department',
+   controllers.borrowingDocumentController.getSummaryReportDepartment);
+
+apiRouter.get('/reports/summary_report_student',
+   controllers.borrowingDocumentController.getSummaryReportStudent);
+
 mainRouter.use((req, res, next) => next(createError(404)));
 mainRouter.use(middlewares.errorHandler);
 
