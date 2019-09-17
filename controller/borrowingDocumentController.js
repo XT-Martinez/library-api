@@ -34,7 +34,8 @@ module.exports = {
          let collections = await knex("collection").orderBy("id");
          let gradeLevels = await knex("grade_level").orderBy("id");
          let sections = await knex("section").orderBy("id");
-         let report = await borrowingDocumentModel.getSummaryReportStudent();
+         let filterData = await borrowingDocumentModel.validateFilter(req.query);
+         let report = await borrowingDocumentModel.getSummaryReportStudent(filterData);
 
          let totals = [];
 
@@ -98,7 +99,8 @@ module.exports = {
       try {
          let collections = await knex("collection").orderBy("id");
          let personnelGroups = await knex("personnel_group").orderBy("id");
-         let report = await borrowingDocumentModel.getSummaryReportPersonnel();
+         let filterData = await borrowingDocumentModel.validateFilter(req.query);
+         let report = await borrowingDocumentModel.getSummaryReportPersonnel(filterData);
 
          let totals = [];
          let facultyTotals = {borrower_count: 0, sub_total: 0};
@@ -160,7 +162,8 @@ module.exports = {
       try {
          let collections = await knex("collection").orderBy("id");
          let departments = await knex("department").orderBy("id");
-         let report = await borrowingDocumentModel.getSummaryReportDepartment();
+         let filterData = await borrowingDocumentModel.validateFilter(req.query);
+         let report = await borrowingDocumentModel.getSummaryReportDepartment(filterData);
 
          let totals = [];
          let grandTotals = {borrower_count: 0, sub_total: 0};

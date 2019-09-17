@@ -1,5 +1,6 @@
 const knex = require('../../db/knex');
 const joi = require('joi');
+const FilterTypes = require('../../constants/FilterTypes');
 
 class BorrowingDocumentModel {
 
@@ -11,49 +12,66 @@ class BorrowingDocumentModel {
 		return await knex('borrow_doc_item').where({borrow_doc_id: id});
 	}
 
-	static async getSummaryReportDepartment() {
-		let collections = await knex("collection");
-
+	static async getSummaryReportDepartment(filter) {
 		let query = knex({d: 'department'})
 			.innerJoin({bd: 'borrow_doc'}, 'd.id', 'bd.department_id')
 			.innerJoin({bdi: 'borrow_doc_item'}, 'bd.id', 'bdi.borrow_doc_id')
 			.innerJoin({c: 'collection'}, 'c.id', 'bdi.collection_id')
 			.groupBy('d.id')
-			.select(knex.ref('d.id').as('department_id'))
-			.select(knex
-				.raw(`(
-					SELECT SUM(borrower_count)
-					FROM borrow_doc WHERE department_id = d.id
-					) AS "borrower_count"`));
+			.select(knex.ref('d.id').as('department_id'));
+			// .select(knex
+			// 	.raw(`(
+			// 		SELECT SUM(borrower_count)
+			// 		FROM borrow_doc WHERE department_id = d.id
+			// 		) AS "borrower_count"`));
+		
+		// let subQueryBorCount = knex('borrow_doc')
+		// 	.sum('borrower_count')
+		// 	.where({department_id: knex.ref('d.id')})
+		// 	.as('borrower_count');
+		
+		// switch(filter.filter_type) {
+		// 	case FilterTypes.FILTER_BY_MONTH_YEAR:
+		// 		let params = {year: parseInt(filter.year), month: parseInt(filter.month)};
+		// 		query.whereRaw(`
+		// 			(EXTRACT(YEAR FROM bd.created_at) = :year
+		// 			AND EXTRACT(MONTH FROM bd.created_at) = :month)
+		// 		`, params);
 
-		// Dynamically add all collections as a pivot column in the select statement
-		// Set collection prefix as column header
-		for(let i = 0; i < collections.length; i++) {
-			query.select(
-				knex.raw(
-					'SUM(CASE c.prefix WHEN :prefix THEN bdi.qty ELSE 0 END) AS :prefix:',
-					{prefix: collections[i].prefix})
-				);
-		}
+		// 		subQueryBorCount.whereRaw(`
+		// 			(EXTRACT(YEAR FROM created_at) = :year
+		// 			AND EXTRACT(MONTH FROM created_at) = :month)
+		// 		`, params);
+		// 		break;
 
-		// Just to confirm if SQL query is correct :)
+		// 	case FilterTypes.FILTER_BY_DATE_RANGE:
+		// 		query.whereBetween('bd.created_at',
+		// 			[filter.start_date, knex.raw("?::date + '1 day'::interval", [filter.end_date])]);
+
+		// 		subQueryBorCount.whereBetween('created_at',
+		// 			[filter.start_date, knex.raw("?::date + '1 day'::interval", [filter.end_date])]);
+		// 		break;
+		// }
+
+		// query.select(subQueryBorCount);
+
+		// // Dynamically add all collections as a pivot column in the select statement
+		// // Set collection prefix as column header
+		// for(let i = 0; i < collections.length; i++) {
+		// 	query.select(
+		// 		knex.raw(
+		// 			'SUM(CASE c.prefix WHEN :prefix THEN bdi.qty ELSE 0 END) AS :prefix:',
+		// 			{prefix: collections[i].prefix})
+		// 		);
+		// }
+
+		// // Just to confirm if SQL query is correct :)
 		// console.log(query.toString());
-
-		return query;
+		// return query;
+		return BorrowingDocumentModel.setCountQuery(query, filter, 1);
 	}
 
-	static async getSummaryReportDepartmentMonthly(month, year) {
-		return BorrowingDocumentModel
-			.getSummaryReportDepartment()
-			.whereRaw(`
-				(EXTRACT(YEAR FROM bd.created_at) = :year
-				AND EXTRACT(MONTH FROM bd.created_at) = :month)
-			`, {year: year, month: month});
-	}
-	
-	static async getSummaryReportPersonnel() {
-		let collections = await knex("collection");
-
+	static async getSummaryReportPersonnel(filter) {
 		let query = knex({pg: 'personnel_group'})
 			.innerJoin({d: 'department'}, 'd.id', 'pg.department_id')
 			.innerJoin({bd: 'borrow_doc'}, 'pg.id', 'bd.personnel_group_id')
@@ -62,29 +80,28 @@ class BorrowingDocumentModel {
 			.groupBy('d.id', 'pg.id')
 			// .orderBy([{column: 'pg.is_faculty', order: 'desc'}, {column: 'pg.id', order: 'asc'}])
 			.select(knex.ref('d.id').as('department_id'))
-			.select(knex.ref('pg.id').as('personnel_group_id'))
-			.select(knex
-				.raw('(SELECT SUM(borrower_count) FROM borrow_doc WHERE personnel_group_id = pg.id) AS "borrower_count"'));
+			.select(knex.ref('pg.id').as('personnel_group_id'));
+			// .select(knex
+			// 	.raw('(SELECT SUM(borrower_count) FROM borrow_doc WHERE personnel_group_id = pg.id) AS "borrower_count"'));
 
-		// Dynamically add all collections as a pivot column in the select statement
-		// Set collection prefix as column header
-		for(let i = 0; i < collections.length; i++) {
-			query.select(
-				knex.raw(
-					'SUM(CASE c.prefix WHEN :prefix THEN bdi.qty ELSE 0 END) AS :prefix:',
-					{prefix: collections[i].prefix})
-				);
-		}
+		// // Dynamically add all collections as a pivot column in the select statement
+		// // Set collection prefix as column header
+		// for(let i = 0; i < collections.length; i++) {
+		// 	query.select(
+		// 		knex.raw(
+		// 			'SUM(CASE c.prefix WHEN :prefix THEN bdi.qty ELSE 0 END) AS :prefix:',
+		// 			{prefix: collections[i].prefix})
+		// 		);
+		// }
 
 		// Just to confirm if SQL query is correct :)
 		// console.log(query.toString());
 
-		return query;
+		// return query;
+		return BorrowingDocumentModel.setCountQuery(query, filter, 2);
 	}
 
-	static async getSummaryReportStudent() {
-		let collections = await knex("collection");
-
+	static async getSummaryReportStudent(filter) {
 		let query = knex({s: 'section'})
 			.innerJoin({gl: 'grade_level'}, 'gl.id', 's.grade_level_id')
 			.innerJoin({d: 'department'}, 'd.id', 'gl.department_id')
@@ -94,9 +111,54 @@ class BorrowingDocumentModel {
 			.groupBy('d.id', 'gl.id','s.id')
 			.select(knex.ref('d.id').as('department_id'))
 			.select(knex.ref('gl.id').as('grade_level_id'))
-			.select(knex.ref('s.id').as('section_id'))
-			.select(knex
-				.raw('(SELECT SUM(borrower_count) FROM borrow_doc WHERE section_id = s.id) AS "borrower_count"'));
+			.select(knex.ref('s.id').as('section_id'));
+			// .select(knex
+			// 	.raw('(SELECT SUM(borrower_count) FROM borrow_doc WHERE section_id = s.id) AS "borrower_count"'));
+			
+			
+
+		// Just to confirm if SQL query is correct :)
+		// console.log(query.toString());
+		return BorrowingDocumentModel.setCountQuery(query, filter, 3);
+	}
+	
+	static async setCountQuery(query, filter, category) {
+		let collections = await knex("collection");
+
+		let subQueryBorCount = knex('borrow_doc')
+			.sum('borrower_count')
+			.as('borrower_count');
+
+		switch(category) {
+			case 1: subQueryBorCount.where({department_id: knex.ref('d.id')}); break;
+			case 2: subQueryBorCount.where({personnel_group_id: knex.ref('pg.id')}); break;
+			case 3: subQueryBorCount.where({section_id: knex.ref('s.id')}); break;
+		}
+		
+		switch(filter.filter_type) {
+			case FilterTypes.FILTER_BY_MONTH_YEAR:
+				let params = {year: parseInt(filter.year), month: parseInt(filter.month)};
+				query.whereRaw(`
+					(EXTRACT(YEAR FROM bd.created_at) = :year
+					AND EXTRACT(MONTH FROM bd.created_at) = :month)
+				`, params);
+
+				subQueryBorCount.whereRaw(`
+					(EXTRACT(YEAR FROM created_at) = :year
+					AND EXTRACT(MONTH FROM created_at) = :month)
+				`, params);
+				break;
+
+			case FilterTypes.FILTER_BY_DATE_RANGE:
+				query.whereBetween('bd.created_at',
+					[filter.start_date, knex.raw("?::date + '1 day'::interval", [filter.end_date])]);
+
+				subQueryBorCount.whereBetween('created_at',
+					[filter.start_date, knex.raw("?::date + '1 day'::interval", [filter.end_date])]);
+				break;
+		}
+
+		query.select(subQueryBorCount);
 
 		// Dynamically add all collections as a pivot column in the select statement
 		// Set collection prefix as column header
@@ -108,19 +170,7 @@ class BorrowingDocumentModel {
 				);
 		}
 
-		// Just to confirm if SQL query is correct :)
-		// console.log(query.toString());
-
 		return query;
-	}
-
-	static async getSummaryReportPersonnelMonthly(month, year) {
-		return BorrowingDocumentModel
-			.getSummaryReportPersonnel()
-			.whereRaw(`
-				(EXTRACT(YEAR FROM bd.created_at) = :year
-				AND EXTRACT(MONTH FROM bd.created_at) = :month)
-			`, {year: year, month: month});
 	}
 
 	static async create(data) {
@@ -134,7 +184,7 @@ class BorrowingDocumentModel {
 					section_id: data.section_id,
 					personnel_group_id: data.personnel_group_id,
 					// sy_id: data.sy_id,
-					created_at: typeof data.created_at === 'undefined' ? null : data.created_at,
+					created_at: typeof data.created_at === 'undefined' ? knex.fn.now() : data.created_at,
 					borrower_count: data.borrower_count,
 					is_bulk: data.is_bulk
 				});
@@ -191,6 +241,62 @@ class BorrowingDocumentModel {
 				})
 			)
 		}).nand('section_id', 'personnel_group_id');
+		
+		return schema.validate(data, {abortEarly: false});
+	}
+
+	static async validateFilter(data) {
+		const schema = joi.object().keys({
+			filter_type				: joi.number().integer().required().valid([1, 2]),
+
+			month						: joi.any().label("Month"),
+			year						: joi.any().label("year"),
+			// year						: joi.any().label("Year").when('filter_type', { 
+			// 									is: joi.number().integer().valid(FilterTypes.FILTER_BY_MONTH_YEAR).required(),
+			// 									then: joi.number().integer().required()
+			// 								}),
+
+			start_date				: joi.any().label("Start Date"),
+			end_date					: joi.any().label("End Date")
+		})
+		// .when(joi.ref('filter_type'), { 
+		// 	is: joi.number().integer().valid(FilterTypes.FILTER_BY_MONTH_YEAR).required(),
+		// 	then: joi.object().keys({
+		// 		month: joi.number().integer().min(1).max(12).required(),
+		// 		year: joi.number().integer().required()
+		// 	})
+		// })
+		
+		.when(
+			joi.object({
+				filter_type: joi.number().integer().valid(FilterTypes.FILTER_BY_MONTH_YEAR).required()
+			}).unknown(),
+			{
+				then: joi.object({
+					month: joi.number().integer().min(1).max(12).required(),
+					year: joi.number().integer().required()
+				})
+			})
+		.when(
+			joi.object({
+				filter_type: joi.number().integer().valid(FilterTypes.FILTER_BY_DATE_RANGE).required()
+			}).unknown(),
+			{
+				then: joi.object({
+					start_date: joi.date().required(),
+					end_date: joi.date().min(joi.ref('start_date')).required()
+				})
+			})
+		;
+
+			// ,
+			// {
+			// 	is: 2,
+			// 	then: joi.object({
+			// 		month: joi.date().required(),
+			// 		year: joi.date().greater(joi.ref('start_date')).required()
+			// 	})
+			// }
 		
 		return schema.validate(data, {abortEarly: false});
 	}
