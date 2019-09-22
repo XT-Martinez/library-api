@@ -177,7 +177,6 @@ class BorrowingDocumentModel {
 		// Post a book borrowing transaction
 		// Return the document header and line items if promise is successful.
 		return new Promise(async (resolve, reject) => {
-
 			try {
 				let ids = await knex("borrow_doc").returning("id").insert({
 					department_id: data.department_id,
@@ -210,7 +209,6 @@ class BorrowingDocumentModel {
 						if (!Array.isArray(item_ids) && item_ids.length == 0)
 						reject(Error("Error"));
 					}
-					
 				}
 
 				// Include the borrowing document items in the output.
@@ -229,8 +227,11 @@ class BorrowingDocumentModel {
 			let result = [];
 			for(let i=0; i < data.length; i++) {
 				try {
-					let r = await BorrowingDocumentModel.create(data[i]);
-					result.push(r);
+					// Only insert if borrower count is inputted
+					if(data[i].borrower_count > 0) {
+						let r = await BorrowingDocumentModel.create(data[i]);
+						result.push(r);
+					}
 				} catch {
 					result.push(e.message);
 				}
@@ -244,8 +245,9 @@ class BorrowingDocumentModel {
 			department_id        : joi.number().label("Department").required(),
 			section_id           : joi.number().label("Section"),
 			personnel_group_id   : joi.number().label("Personnel Group"),
-			// sy_id					   : joi.number().label("School Year").required(),
-			borrower_count			: joi.number().integer().label("Borrower Count").min(1).required(),
+			borrower_count			: joi.label("Borrower Count")
+												// Borrower count only required when in non-bulk creation
+												.when('is_bulk', {is: false, then: joi.number().integer().min(1).required()}),
 			is_bulk		  			: joi.boolean().truthy(1, 'Y').falsy(0, 'N').label("Is Faculty?").required(),
 			created_at				: joi.date().label("Log Date"),
 
@@ -274,21 +276,10 @@ class BorrowingDocumentModel {
 
 			month						: joi.any().label("Month"),
 			year						: joi.any().label("year"),
-			// year						: joi.any().label("Year").when('filter_type', { 
-			// 									is: joi.number().integer().valid(FilterTypes.FILTER_BY_MONTH_YEAR).required(),
-			// 									then: joi.number().integer().required()
-			// 								}),
 
 			start_date				: joi.any().label("Start Date"),
 			end_date					: joi.any().label("End Date")
 		})
-		// .when(joi.ref('filter_type'), { 
-		// 	is: joi.number().integer().valid(FilterTypes.FILTER_BY_MONTH_YEAR).required(),
-		// 	then: joi.object().keys({
-		// 		month: joi.number().integer().min(1).max(12).required(),
-		// 		year: joi.number().integer().required()
-		// 	})
-		// })
 		
 		.when(
 			joi.object({
@@ -309,18 +300,7 @@ class BorrowingDocumentModel {
 					start_date: joi.date().required(),
 					end_date: joi.date().min(joi.ref('start_date')).required()
 				})
-			})
-		;
-
-			// ,
-			// {
-			// 	is: 2,
-			// 	then: joi.object({
-			// 		month: joi.date().required(),
-			// 		year: joi.date().greater(joi.ref('start_date')).required()
-			// 	})
-			// }
-		
+			});
 		return schema.validate(data, {abortEarly: false});
 	}
 
