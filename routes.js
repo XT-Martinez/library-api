@@ -73,6 +73,9 @@ apiRouter.route('/borrowing_doc/:id')
    // .put(controllers.borrowingDocumentController.update)
    // .delete(controllers.borrowingDocumentController.delete);
 
+apiRouter.post('/borrowing_doc/create_bulk',
+   controllers.borrowingDocumentController.createBulk);
+
 // Report Routes
 apiRouter.get('/reports/summary_report_personnel',
    controllers.borrowingDocumentController.getSummaryReportPersonnel);

@@ -224,8 +224,23 @@ class BorrowingDocumentModel {
 			
 	}
 
-	static async validate(data) {
-		const schema = joi.object().keys({
+	static async createBulk(data) {
+		return new Promise(async(resolve, reject) => {
+			let result = [];
+			for(let i=0; i < data.length; i++) {
+				try {
+					let r = await BorrowingDocumentModel.create(data[i]);
+					result.push(r);
+				} catch {
+					result.push(e.message);
+				}
+			}
+			resolve(result);
+		});
+	}
+
+	static async initValidationSchema() {
+		return joi.object().keys({
 			department_id        : joi.number().label("Department").required(),
 			section_id           : joi.number().label("Section"),
 			personnel_group_id   : joi.number().label("Personnel Group"),
@@ -241,8 +256,16 @@ class BorrowingDocumentModel {
 				})
 			)
 		}).nand('section_id', 'personnel_group_id');
-		
+	}
+
+	static async validate(data) {
+		let schema = await BorrowingDocumentModel.initValidationSchema();
 		return schema.validate(data, {abortEarly: false});
+	}
+
+	static async validateBulk(data) {
+		let schema = await BorrowingDocumentModel.initValidationSchema();
+		return joi.array().items(schema).validate(data, {abortEarly: false});
 	}
 
 	static async validateFilter(data) {

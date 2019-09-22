@@ -24,9 +24,18 @@ module.exports = {
       .catch(e => next(e));
    },
 
-   getTest: async function(req, res, next) {
-      let report = await borrowingDocumentModel.getSummaryReportStudent();
-      res.json(report);
+   createBulk: async function (req, res, next) {
+      // Validate request body
+      borrowingDocumentModel.validateBulk(req.body)
+      // Post borrowing transaction and create borrowing document
+      .then(data => borrowingDocumentModel.createBulk(data))
+      .then(borrowingDocs => {
+         res.json(borrowingDocs)
+      })
+      // Retrieve the latest created record
+      // .then(borrowingDoc => res.json(borrowingDoc))
+      // Throw error to the error handler
+      .catch(e => next(e));
    },
 
    getSummaryReportStudent: async function (req, res, next) {
