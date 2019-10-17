@@ -19,55 +19,7 @@ class BorrowingDocumentModel {
 			.innerJoin({c: 'collection'}, 'c.id', 'bdi.collection_id')
 			.groupBy('d.id')
 			.select(knex.ref('d.id').as('department_id'));
-			// .select(knex
-			// 	.raw(`(
-			// 		SELECT SUM(borrower_count)
-			// 		FROM borrow_doc WHERE department_id = d.id
-			// 		) AS "borrower_count"`));
-		
-		// let subQueryBorCount = knex('borrow_doc')
-		// 	.sum('borrower_count')
-		// 	.where({department_id: knex.ref('d.id')})
-		// 	.as('borrower_count');
-		
-		// switch(filter.filter_type) {
-		// 	case FilterTypes.FILTER_BY_MONTH_YEAR:
-		// 		let params = {year: parseInt(filter.year), month: parseInt(filter.month)};
-		// 		query.whereRaw(`
-		// 			(EXTRACT(YEAR FROM bd.created_at) = :year
-		// 			AND EXTRACT(MONTH FROM bd.created_at) = :month)
-		// 		`, params);
 
-		// 		subQueryBorCount.whereRaw(`
-		// 			(EXTRACT(YEAR FROM created_at) = :year
-		// 			AND EXTRACT(MONTH FROM created_at) = :month)
-		// 		`, params);
-		// 		break;
-
-		// 	case FilterTypes.FILTER_BY_DATE_RANGE:
-		// 		query.whereBetween('bd.created_at',
-		// 			[filter.start_date, knex.raw("?::date + '1 day'::interval", [filter.end_date])]);
-
-		// 		subQueryBorCount.whereBetween('created_at',
-		// 			[filter.start_date, knex.raw("?::date + '1 day'::interval", [filter.end_date])]);
-		// 		break;
-		// }
-
-		// query.select(subQueryBorCount);
-
-		// // Dynamically add all collections as a pivot column in the select statement
-		// // Set collection prefix as column header
-		// for(let i = 0; i < collections.length; i++) {
-		// 	query.select(
-		// 		knex.raw(
-		// 			'SUM(CASE c.prefix WHEN :prefix THEN bdi.qty ELSE 0 END) AS :prefix:',
-		// 			{prefix: collections[i].prefix})
-		// 		);
-		// }
-
-		// // Just to confirm if SQL query is correct :)
-		// console.log(query.toString());
-		// return query;
 		return BorrowingDocumentModel.setCountQuery(query, filter, 1);
 	}
 
@@ -81,23 +33,7 @@ class BorrowingDocumentModel {
 			// .orderBy([{column: 'pg.is_faculty', order: 'desc'}, {column: 'pg.id', order: 'asc'}])
 			.select(knex.ref('d.id').as('department_id'))
 			.select(knex.ref('pg.id').as('personnel_group_id'));
-			// .select(knex
-			// 	.raw('(SELECT SUM(borrower_count) FROM borrow_doc WHERE personnel_group_id = pg.id) AS "borrower_count"'));
 
-		// // Dynamically add all collections as a pivot column in the select statement
-		// // Set collection prefix as column header
-		// for(let i = 0; i < collections.length; i++) {
-		// 	query.select(
-		// 		knex.raw(
-		// 			'SUM(CASE c.prefix WHEN :prefix THEN bdi.qty ELSE 0 END) AS :prefix:',
-		// 			{prefix: collections[i].prefix})
-		// 		);
-		// }
-
-		// Just to confirm if SQL query is correct :)
-		// console.log(query.toString());
-
-		// return query;
 		return BorrowingDocumentModel.setCountQuery(query, filter, 2);
 	}
 
@@ -112,13 +48,7 @@ class BorrowingDocumentModel {
 			.select(knex.ref('d.id').as('department_id'))
 			.select(knex.ref('gl.id').as('grade_level_id'))
 			.select(knex.ref('s.id').as('section_id'));
-			// .select(knex
-			// 	.raw('(SELECT SUM(borrower_count) FROM borrow_doc WHERE section_id = s.id) AS "borrower_count"'));
-			
-			
 
-		// Just to confirm if SQL query is correct :)
-		// console.log(query.toString());
 		return BorrowingDocumentModel.setCountQuery(query, filter, 3);
 	}
 	
